@@ -7,7 +7,8 @@
 <body>
   <h1>Googleスプレッドシート編集</h1>
   <label>スプレッドシートURL: <input type="text" id="spreadsheetUrl" placeholder="https://docs.google.com/spreadsheets/d/..."></label><br>
-  <label>シート名: <input type="text" id="sheetName" placeholder="Sheet1"></label><br>
+  <button onclick="fetchSheetNames()">シート名取得</button><br>
+  <label>シート名: <select id="sheetName"></select></label><br>
   <button onclick="fetchData()">データ取得</button>
 
   <h2>取得データ</h2>
