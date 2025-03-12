@@ -1,5 +1,24 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpLr4Rs15qypAphuca5R7MXeqsKV6wgFssFgza1qXr8IHClVNWqphnVucqEmM_vzsjfA/exec"; // デプロイしたURLに置き換え
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx1pOAPlQFcCwG6paZylu88JU0leDVaqRgfk5VtTgrOKTnBVEWJ9hgFRHcSDkK4seLTlA/exec"; // Google Apps ScriptのウェブアプリURLに置き換え
 let headers = [];
+
+function fetchSheetNames() {
+  const url = document.getElementById("spreadsheetUrl").value;
+  const spreadsheetId = url.match(/\/d\/(.+?)\//)[1];
+
+  fetch(`${SCRIPT_URL}?spreadsheetId=${spreadsheetId}&action=getSheetNames`)
+    .then(response => response.json())
+    .then(result => {
+      const select = document.getElementById("sheetName");
+      select.innerHTML = "";
+      result.sheetNames.forEach(name => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.text = name;
+        select.appendChild(option);
+      });
+    })
+    .catch(error => console.error("シート名取得エラー:", error));
+}
 
 function fetchData() {
   const url = document.getElementById("spreadsheetUrl").value;
@@ -9,27 +28,35 @@ function fetchData() {
   fetch(`${SCRIPT_URL}?spreadsheetId=${spreadsheetId}&sheetName=${sheetName}`)
     .then(response => response.json())
     .then(result => {
-      headers = result.headers;
-      document.getElementById("headers").innerText = "ヘッダー: " + headers.join(", ");
+      if (result.headers && Array.isArray(result.headers)) {
+        headers = result.headers;
+        document.getElementById("headers").innerText = "ヘッダー: " + headers.join(", ");
+      } else {
+        console.error("ヘッダーが取得できませんでした");
+      }
 
-      // プルダウンメニューの生成
-      const select = document.getElementById("keyValue");
-      select.innerHTML = "";
-      result.bValues.forEach(value => {
-        const option = document.createElement("option");
-        option.value = value;
-        option.text = value;
-        select.appendChild(option);
-      });
+      if (result.bValues && Array.isArray(result.bValues)) {
+        const select = document.getElementById("keyValue");
+        select.innerHTML = "";
+        result.bValues.forEach(value => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.text = value;
+          select.appendChild(option);
+        });
+      } else {
+        console.error("B列の値が取得できませんでした");
+      }
 
-      // 入力欄の生成
-      let inputs = "";
-      headers.forEach(header => {
-        inputs += `<label>${header}: <input type="text" id="input-${header}"></label><br>`;
-      });
-      document.getElementById("inputFields").innerHTML = inputs;
+      if (headers && headers.length > 0) {
+        let inputs = "";
+        headers.forEach(header => {
+          inputs += `<label>${header}: <input type="text" id="input-${header}"></label><br>`;
+        });
+        document.getElementById("inputFields").innerHTML = inputs;
+      }
     })
-    .catch(error => console.error("エラー:", error));
+    .catch(error => console.error("データ取得エラー:", error));
 }
 
 function submitData() {
@@ -55,5 +82,5 @@ function submitData() {
   })
   .then(response => response.text())
   .then(result => alert(result))
-  .catch(error => console.error("エラー:", error));
+  .catch(error => console.error("送信エラー:", error));
 }
