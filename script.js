@@ -4,15 +4,25 @@ let headers = [];
 function fetchData() {
   const url = document.getElementById("spreadsheetUrl").value;
   const sheetName = document.getElementById("sheetName").value;
-  const spreadsheetId = url.match(/\/d\/(.+?)\//)[1]; // URLからIDを抽出
+  const spreadsheetId = url.match(/\/d\/(.+?)\//)[1];
 
   fetch(`${SCRIPT_URL}?spreadsheetId=${spreadsheetId}&sheetName=${sheetName}`)
     .then(response => response.json())
     .then(result => {
       headers = result.headers;
-      document.getElementById("headers").innerText = "1行目: " + headers.join(", ");
-      document.getElementById("data").innerText = "2行目: " + result.data.join(", ");
+      document.getElementById("headers").innerText = "ヘッダー: " + headers.join(", ");
 
+      // プルダウンメニューの生成
+      const select = document.getElementById("keyValue");
+      select.innerHTML = "";
+      result.bValues.forEach(value => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.text = value;
+        select.appendChild(option);
+      });
+
+      // 入力欄の生成
       let inputs = "";
       headers.forEach(header => {
         inputs += `<label>${header}: <input type="text" id="input-${header}"></label><br>`;
